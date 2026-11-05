@@ -13,7 +13,7 @@ function progress(percent,title){$('progress').style.width=`${Math.min(100,perce
 function ready(){if(state.phase!=='loading')return;state.phase='ready';clearTimeout(loadingTimer);$('loading').hidden=true;$('controls').hidden=false;}
 async function workerBlob(name){
  for(const url of [cdnBase+'assets/'+name,new URL('./assets/'+name,location.href).href]){
-  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),20000);
+  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),45000);
   try{const response=await fetch(url,{signal:controller.signal});if(!response.ok)throw Error('Component download failed');const text=await response.text();const blob=URL.createObjectURL(new Blob([text],{type:'text/javascript'}));workerUrls.push(blob);return blob;}catch{}finally{clearTimeout(timer);}
  }
  throw Error('查看器组件下载失败，请稍后重试。');
@@ -22,7 +22,7 @@ async function prepareWorkers(){const names=['WorkerFetch-C9HaDI9p.js','WorkerSo
 async function viewerModule(){let timer;try{return await Promise.race([import(cdnBase+'assets/viewer.js'),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('CDN timed out')),25000);})]);}catch{return import('./assets/viewer.js');}finally{clearTimeout(timer);}}
 async function download(){
  for(const url of [cdnBase+'scene.splat',new URL('./scene.splat',location.href).href]){
- const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),65000);state.downloaded=0;
+ const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),120000);state.downloaded=0;
  try{
  const response=await fetch(url,{signal:controller.signal});if(!response.ok)throw Error('模型下载失败，请检查网络后重试。');
  const total=8000000;const chunks=[];
@@ -30,7 +30,7 @@ async function download(){
  else{chunks.push(new Uint8Array(await response.arrayBuffer()));state.downloaded=chunks[0].byteLength;progress(100,'正在显示场景…');}
  if(state.downloaded!==total)throw Error('模型下载未完成，请检查网络后重试。');
  state.source=url;return new Blob(chunks,{type:'application/octet-stream'});
- }catch(error){if(url===new URL('./scene.splat',location.href).href)throw Error('模型下载失败，请检查网络后重试。');progress(0,'网络较慢，正在重试…');}finally{clearTimeout(timer);}
+ }catch(error){if(url===new URL('./scene.splat',location.href).href)throw Error('模型下载失败，请检查网络后重试。');progress(0,'网络较慢，正在尝试备用线路…');}finally{clearTimeout(timer);}
  }
 }
 function observe(bus){const original=bus.fire.bind(bus);bus.fire=(event,...args)=>{if(event===api.Information&&args[0]){const info=args[0];if(info.modelSplatCount!==undefined)state.modelCount=info.modelSplatCount;if(info.renderSplatCount!==undefined){state.renderCount=info.renderSplatCount;if(state.renderCount>0)ready();}}return original(event,...args);};}
@@ -39,7 +39,7 @@ async function enter(){
  state.phase='loading';$('welcome').hidden=true;$('failure').hidden=true;$('loading').hidden=false;
  try{
   const probe=document.createElement('canvas');if(!probe.getContext('webgl2'))throw Error('当前浏览器无法显示三维场景。请使用手机自带浏览器或新版 Chrome 打开。');
-  loadingTimer=setTimeout(()=>fail('加载时间较长。请检查网络后重新加载。'),120000);
+  loadingTimer=setTimeout(()=>fail('加载时间较长。请检查网络后重新加载。'),240000);
   const loaded=await Promise.all([viewerModule(),fetch('./view.json').then(r=>{if(!r.ok)throw Error('视角文件读取失败。');return r.json();}),download(),prepareWorkers()]);
   if(state.phase==='error')return;
   [api,pose]=loaded;poses=await fetch('./views.json').then(r=>r.json());progress(100,'正在显示场景…');
