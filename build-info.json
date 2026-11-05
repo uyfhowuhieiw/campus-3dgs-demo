@@ -1,7 +1,20 @@
 {
-  "gaussians": 366318,
-  "bytes": 11722176,
-  "original_bytes": 86452599,
-  "positions_preserved": true,
-  "format": "standard splat; SH0 colors"
+  "video": "0008a3fca04dd9c658847ab3e5cfb3ee.mp4",
+  "captured_duration_seconds": 123.54325,
+  "registered_images": 114,
+  "gaussians": 250000,
+  "bytes": 8000000,
+  "original_bytes": 38001026,
+  "step": 6000,
+  "training_run": "balanced_all",
+  "format": "standard splat; SH0 colors",
+  "positions_scales_preserved": true,
+  "gaussians_removed": 0,
+  "sha256": "06a18f04ae616f785c3de77c78b243d32c2b7429423fe8e8f07e0cb1cb26a2a4",
+  "validation": "Desktop Edge and emulated mobile viewports; no physical phone or WeChat-device test",
+  "quality_limits": [
+    "桌底、背景与遮挡区域不完整",
+    "反光地面和低纹理桌面仍有浮层、模糊与局部拉丝",
+    "无测量尺度、地理配准或 GIS 坐标"
+  ]
 }
