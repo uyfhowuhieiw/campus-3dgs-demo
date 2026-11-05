@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10252a">
+  <meta name="description" content="打开教室三维实景，拖动旋转、双指缩放。无需安装应用。">
+  <meta property="og:title" content="教室 3D 体验 · 校园实景">
+  <meta property="og:description" content="打开链接，走近教室里的三维空间。">
+  <meta property="og:image" content="assets/poster.jpg">
+  <meta property="og:type" content="website">
+  <title>教室 3D 体验 · 校园实景</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="assets/asset-xQM96TAj.css">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <div id="gsviewer" aria-label="教室三维场景"></div>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="校园实景首页"><span class="brand-mark" aria-hidden="true">◈</span><span>校园实景<small>CAMPUS SPACES</small></span></a>
+    <button id="share" class="quiet-button" type="button">分享链接 <span aria-hidden="true">↗</span></button>
+  </header>
+  <main id="welcome" class="welcome">
+    <div class="intro">
+      <span class="eyebrow">一个小小的校园空间实验</span>
+      <h1>换个角度，<br>看看教室。</h1>
+      <p class="intro-copy">进入三维场景，用手指探索桌椅与空间。</p>
+      <button id="enter" class="primary-button" type="button">进入三维场景 <span aria-hidden="true">→</span></button>
+      <p class="download-note">模型约 12 MB · 无需安装应用</p>
+    </div>
+    <div class="scene-caption"><span class="live-dot"></span> 教室 · 3D 实景</div>
+  </main>
+  <section id="loading" class="loading-card" aria-live="polite" hidden>
+    <span class="eyebrow">正在进入三维空间</span><h2 id="loading-title">准备查看器…</h2>
+    <div class="progress-track"><div id="progress"></div></div>
+    <p id="loading-note">首次打开需要下载模型，请稍候。</p>
+  </section>
+  <section id="failure" class="failure-card" role="alert" hidden>
+    <h2>这次没有加载成功</h2><p id="failure-message"></p>
+    <button id="retry" class="primary-button" type="button">重新加载</button>
+    <p class="wechat-tip">如果在微信内仍无法显示，请点右上角“…”选择在浏览器中打开。</p>
+  </section>
+  <footer id="controls" class="controls" hidden>
+    <div class="scene-label"><strong>教室 · 3D 实景</strong><span id="gesture-hint">单指旋转 · 双指缩放</span></div>
+    <div class="control-buttons">
+      <button id="home" type="button" title="返回初始视角">回到起点</button>
+      <button id="zoom-in" type="button" title="放大" aria-label="放大">＋</button>
+      <button id="zoom-out" type="button" title="缩小" aria-label="缩小">−</button>
+    </div>
+  </footer>
+  <div id="toast" class="toast" role="status" hidden>链接已复制，可以粘贴到微信</div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
