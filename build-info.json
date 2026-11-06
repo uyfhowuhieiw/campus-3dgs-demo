@@ -1,20 +1,41 @@
 {
-  "video": "0008a3fca04dd9c658847ab3e5cfb3ee.mp4",
-  "captured_duration_seconds": 123.54325,
-  "registered_images": 114,
-  "gaussians": 250000,
-  "bytes": 8000000,
+  "videos": [
+    "0008a3fca04dd9c658847ab3e5cfb3ee.mp4",
+    "825a1bb6ff2f7f7b0b0a1d955aacd6b6.mp4"
+  ],
+  "captured_duration_seconds": [
+    123.530911,
+    40.357244
+  ],
+  "registered_images": 254,
+  "registered_per_video": {
+    "new": 182,
+    "old": 72
+  },
+  "sparse_points": 32101,
+  "cross_video_tracks": 4190,
+  "training_images": 235,
+  "training_per_video": {
+    "new": 172,
+    "old": 63
+  },
+  "gaussians": 246353,
+  "bytes": 7883296,
   "original_bytes": 38001026,
+  "cleaned_ply_bytes": 37446682,
   "step": 6000,
-  "training_run": "balanced_all",
-  "format": "standard splat; SH0 colors",
+  "training_run": "joint960",
+  "max_training_resolution": 960,
+  "format": "standard splat; SH0 colors; original and cleaned PLY preserve SH2",
   "positions_scales_preserved": true,
-  "gaussians_removed": 0,
-  "sha256": "06a18f04ae616f785c3de77c78b243d32c2b7429423fe8e8f07e0cb1cb26a2a4",
-  "validation": "Desktop Edge and emulated mobile viewports; no physical phone or WeChat-device test",
+  "gaussians_removed": 3647,
+  "sha256": "587f1f4f88f5e3fa0411488cc6dc1db27d6be34fefa57c18046ecc38c9dc8dda",
+  "asset_revision": "f3f0145be823ddb3158223b7ca827c36fe2bcf38",
+  "validation": "Local desktop Edge and emulated mobile portrait/landscape viewports, mouse and touch interactions; no physical phone or WeChat-device test",
   "quality_limits": [
     "桌底、背景与遮挡区域不完整",
     "反光地面和低纹理桌面仍有浮层、模糊与局部拉丝",
+    "保守清理只删除弱支持候选，不代表几何已修复",
     "无测量尺度、地理配准或 GIS 坐标"
   ]
 }
