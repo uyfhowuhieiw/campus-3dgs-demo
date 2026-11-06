@@ -20,20 +20,63 @@ async function workerBlob(name){
 }
 async function prepareWorkers(){const names=['WorkerFetch-C9HaDI9p.js','WorkerSort-RglOWZwm.js','WorkerLod-DKtH0Yiu.js'];const urls=await Promise.all(names.map(workerBlob));globalThis.__campusWorkerUrls=Object.fromEntries(names.map((name,index)=>[name,urls[index]]));}
 async function viewerModule(){let timer;try{return await Promise.race([import(cdnBase+'assets/viewer.js'),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('CDN timed out')),25000);})]);}catch{return import('./assets/viewer.js');}finally{clearTimeout(timer);}}
+async function downloadParts(url,signal,parts){
+ const size=65536,total=state.expectedBytes,count=Math.ceil(total/size);let next=1;
+ function progressBytes(bytes){state.downloaded+=bytes;const percent=Math.round(100*state.downloaded/total);progress(percent,`正在加载模型 ${percent}%`);}
+ async function readPart(response,index){
+  const start=index*size,end=Math.min(total-1,start+size-1);
+  if(response.status!==206)throw Error('Model partial response missing');
+  const range=response.headers.get('content-range');
+  if(range&&range!==`bytes ${start}-${end}/${total}`)throw Error('Model range mismatch');
+  const bytes=new Uint8Array(await response.arrayBuffer());
+  if(bytes.byteLength!==end-start+1)throw Error('Model segment incomplete');
+  parts[index]=bytes;progressBytes(bytes.byteLength);
+ }
+ async function fetchPart(index){
+  const start=index*size,end=Math.min(total-1,start+size-1);
+  for(let attempt=0;attempt<2;attempt++){
+   const pieceController=new AbortController(),abort=()=>pieceController.abort();signal.addEventListener('abort',abort,{once:true});
+   if(signal.aborted)pieceController.abort();
+   const timer=setTimeout(abort,12000);
+   try{
+    const response=await fetch(url,{signal:pieceController.signal,headers:{Range:`bytes=${start}-${end}`}});
+    if(index===0&&response.status===200)return response;
+    await readPart(response,index);return null;
+   }catch(error){if(signal.aborted||attempt===1)throw error;}finally{clearTimeout(timer);signal.removeEventListener('abort',abort);}
+  }
+ }
+ let first=null;
+ try{if(!parts[0])first=await fetchPart(0);}catch(error){if(signal.aborted)throw error;}
+ if(first?.status===200){
+  state.downloaded=0;
+  const chunks=[];
+  if(first.body?.getReader){const reader=first.body.getReader();for(;;){const {done,value}=await reader.read();if(done)break;chunks.push(value);progressBytes(value.byteLength);}}
+  else{const bytes=new Uint8Array(await first.arrayBuffer());chunks.push(bytes);progressBytes(bytes.byteLength);}
+  return chunks;
+ }
+ async function worker(){
+  while(next<count){const index=next++;if(!parts[index])try{await fetchPart(index);}catch(error){if(signal.aborted)throw error;}}
+ }
+ await Promise.all(Array.from({length:4},worker));
+ if(parts.filter(Boolean).length!==count)throw Error('Some model segments are missing');
+ return parts;
+}
+
 async function download(){
- for(const url of [cdnBase+'scene.splat',new URL('./scene.splat',location.href).href]){
- const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),120000);state.downloaded=0;
+ const parts=[];
+ const sources=[cdnBase+'scene.splat',new URL('./scene.splat',location.href).href];
+ for(const [routeIndex,url] of sources.entries()){
+ const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),120000);state.downloaded=parts.reduce((sum,p)=>sum+(p?.byteLength||0),0);
  try{
- const response=await fetch(url,{signal:controller.signal});if(!response.ok)throw Error('模型下载失败，请检查网络后重试。');
- const total=state.expectedBytes;const chunks=[];
- if(response.body?.getReader){const reader=response.body.getReader();for(;;){const {done,value}=await reader.read();if(done)break;chunks.push(value);state.downloaded+=value.byteLength;const percent=Math.min(100,Math.round(100*state.downloaded/total));progress(percent,`正在加载模型 ${percent}%`);}}
- else{chunks.push(new Uint8Array(await response.arrayBuffer()));state.downloaded=chunks[0].byteLength;progress(100,'正在显示场景…');}
+ const total=state.expectedBytes;
+ const blobParts=await downloadParts(url,controller.signal,parts);
+ const chunks=blobParts;
  if(state.downloaded!==total)throw Error('模型下载未完成，请检查网络后重试。');
  const blob=new Blob(chunks,{type:'application/octet-stream'});
  state.modelSha256=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer())),v=>v.toString(16).padStart(2,'0')).join('');
  if(state.modelSha256!=='587f1f4f88f5e3fa0411488cc6dc1db27d6be34fefa57c18046ecc38c9dc8dda')throw Error('模型校验失败，请重新加载。');
  state.source=url;return blob;
- }catch(error){if(url===new URL('./scene.splat',location.href).href)throw Error('模型下载失败，请检查网络后重试。');progress(0,'网络较慢，正在尝试备用线路…');}finally{clearTimeout(timer);}
+ }catch(error){if(routeIndex===sources.length-1)throw Error('模型下载失败，请检查网络后重试。');progress(0,'网络较慢，正在尝试备用线路…');}finally{controller.abort();clearTimeout(timer);}
  }
 }
 function observe(bus){const original=bus.fire.bind(bus);bus.fire=(event,...args)=>{if(event===api.Information&&args[0]){const info=args[0];if(info.modelSplatCount!==undefined)state.modelCount=info.modelSplatCount;if(info.renderSplatCount!==undefined){state.renderCount=info.renderSplatCount;if(state.renderCount>0)ready();}}return original(event,...args);};}

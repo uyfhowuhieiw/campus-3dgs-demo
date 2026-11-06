@@ -11,3 +11,5 @@ Brush 0.3.0，960 分辨率上限，6000 步，原始 250000 个高斯。按多�
 保留 Fastly jsDelivr 固定资源提交、原站回退、Blob Worker 适配，以及模型下载 120 秒/总加载 240 秒超时。渲染器 [Reall3dViewer](https://github.com/reall3d-com/Reall3dViewer)，MIT 许可。
 
 回滚标签：`before-joint-video-20261106`（联合重建发布前）。
+
+模型通过 4 个并发请求按 64 KiB 分段读取，分段长度校验后再核对完整 SHA-256，减少本地网络上大文件连续下载停顿的影响。Fastly 与原站均支持 Range，分段请求失败重试并保留成功分段，线路失败自动转备用以补齐缺失分段；不支持 Range 时使用连续下载。
