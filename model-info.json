@@ -1,0 +1,14 @@
+{
+  "modelRevision": "joint-video-20261106-clean-v1",
+  "count": 246353,
+  "bytes": 7883296,
+  "sha256": "587f1f4f88f5e3fa0411488cc6dc1db27d6be34fefa57c18046ecc38c9dc8dda",
+  "registered": {
+    "new": 182,
+    "old": 72
+  },
+  "trainingFrames": 235,
+  "rawCount": 250000,
+  "removed": 3647,
+  "color": "SH0 on web; SH2 preserved in PLY"
+}
