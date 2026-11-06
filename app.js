@@ -1,8 +1,8 @@
 const $=id=>document.getElementById(id);
-const state=window.sceneState={modelRevision:'new-video-20261106-6000',expectedBytes:8000000,phase:'welcome',downloaded:0,modelCount:0,renderCount:0,error:null};
+const state=window.sceneState={modelRevision:'joint-video-20261106-clean-v1',expectedBytes:7883296,phase:'welcome',downloaded:0,modelCount:0,renderCount:0,error:null};
 let viewer,api,pose,blobUrl,loadingTimer,toastTimer;
 let poses=[],poseIndex=0;
-const assetRevision='ccad7e885604e71ac58d44004e9f7468d3f2544a';
+const assetRevision='f3f0145be823ddb3158223b7ca827c36fe2bcf38';
 const cdnBase=location.hostname==='127.0.0.1'?new URL('./',location.href).href:`https://fastly.jsdelivr.net/gh/uyfhowuhieiw/campus-3dgs-demo@${assetRevision}/`;
 const workerUrls=[];
 const mobile=matchMedia('(pointer:coarse)').matches;
@@ -25,11 +25,14 @@ async function download(){
  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),120000);state.downloaded=0;
  try{
  const response=await fetch(url,{signal:controller.signal});if(!response.ok)throw Error('模型下载失败，请检查网络后重试。');
- const total=8000000;const chunks=[];
+ const total=state.expectedBytes;const chunks=[];
  if(response.body?.getReader){const reader=response.body.getReader();for(;;){const {done,value}=await reader.read();if(done)break;chunks.push(value);state.downloaded+=value.byteLength;const percent=Math.min(100,Math.round(100*state.downloaded/total));progress(percent,`正在加载模型 ${percent}%`);}}
  else{chunks.push(new Uint8Array(await response.arrayBuffer()));state.downloaded=chunks[0].byteLength;progress(100,'正在显示场景…');}
  if(state.downloaded!==total)throw Error('模型下载未完成，请检查网络后重试。');
- state.source=url;return new Blob(chunks,{type:'application/octet-stream'});
+ const blob=new Blob(chunks,{type:'application/octet-stream'});
+ state.modelSha256=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer())),v=>v.toString(16).padStart(2,'0')).join('');
+ if(state.modelSha256!=='587f1f4f88f5e3fa0411488cc6dc1db27d6be34fefa57c18046ecc38c9dc8dda')throw Error('模型校验失败，请重新加载。');
+ state.source=url;return blob;
  }catch(error){if(url===new URL('./scene.splat',location.href).href)throw Error('模型下载失败，请检查网络后重试。');progress(0,'网络较慢，正在尝试备用线路…');}finally{clearTimeout(timer);}
  }
 }
